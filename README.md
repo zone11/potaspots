@@ -1,4 +1,4 @@
-# POTA Live Spots
+# POTA Spots
 
 A real-time web application for filtering and monitoring Parks on the Air (POTA) activations.
 
