@@ -70,6 +70,60 @@ h1 {
     vertical-align: middle;
 }
 
+.version {
+    background: #333;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: #ff6b35;
+}
+
+.filter-header {
+    background: #222;
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
+}
+
+.filter-toggle {
+    width: 100%;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: #ff6b35;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.filter-toggle:hover {
+    background: #2a2a2a;
+}
+
+.toggle-icon {
+    transition: transform 0.3s;
+    font-size: 0.8em;
+}
+
+.filter-toggle.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.filter-active-badge {
+    color: #4caf50;
+    font-size: 1.2em;
+    line-height: 1;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 .filters {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -78,6 +132,100 @@ h1 {
     background: #222;
     border-bottom: 1px solid #444;
     flex-shrink: 0;
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.filters.collapsed {
+    max-height: 0;
+    padding: 0 20px;
+}
+
+.filter-stats-row {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #2a2a2a;
+    border-radius: 4px;
+    border: 1px solid #444;
+}
+
+.stats-compact-mini {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.stats-label-mini {
+    font-size: 0.75em;
+    color: #999;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.stat-mini {
+    font-size: 0.8em;
+    color: #ccc;
+}
+
+.stat-mini strong {
+    color: #ff6b35;
+    font-weight: 700;
+}
+
+.refresh-btn-mini {
+    background: #ff6b35;
+    color: #000;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.refresh-btn-mini:hover {
+    background: #ff8555;
+    transform: scale(1.1);
+}
+
+.stats-filtered {
+    padding: 8px 20px;
+    background: #1f1f1f;
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.stats-label-filtered {
+    font-size: 0.75em;
+    color: #4caf50;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .filters {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-stats-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .stats-compact-mini {
+        justify-content: center;
+    }
 }
 
 .filter-group {
@@ -112,77 +260,6 @@ select:focus, input:focus {
 select option {
     background: #2a2a2a;
     color: #ffffff;
-}
-
-.stats-wrapper {
-    padding: 10px 20px;
-    background: #1f1f1f;
-    border-bottom: 1px solid #444;
-    flex-shrink: 0;
-}
-
-.stats-compact {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.stats-section {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.stats-label {
-    font-size: 0.75em;
-    color: #999;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-.stat-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    background: #2a2a2a;
-    border-radius: 4px;
-    border: 1px solid #444;
-}
-
-.stat-inline.filtered {
-    background: #ff6b35;
-    border-color: #ff6b35;
-    color: #000;
-}
-
-.stat-key {
-    font-size: 0.7em;
-    opacity: 0.8;
-}
-
-.stat-value {
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.refresh-btn {
-    background: #ff6b35;
-    color: #000;
-    border: none;
-    padding: 6px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.refresh-btn:hover {
-    background: #ff8555;
-    transform: translateY(-1px);
 }
 
 .spots-container {

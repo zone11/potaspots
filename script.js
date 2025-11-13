@@ -488,6 +488,9 @@ function restoreFilters() {
             if (filters.country) {
                 document.getElementById('countryFilter').value = filters.country;
             }
+            
+            // Check if filters are active
+            checkActiveFilters();
         }
     } catch (e) {
         console.error('Error restoring filters:', e);
@@ -534,12 +537,62 @@ async function loadSpots() {
     }
 }
 
+// Filter toggle functionality
+function toggleFilters() {
+    const filtersContainer = document.getElementById('filtersContainer');
+    const toggleButton = document.getElementById('filterToggle');
+    
+    filtersContainer.classList.toggle('collapsed');
+    toggleButton.classList.toggle('collapsed');
+    
+    // Save state to localStorage
+    localStorage.setItem('filtersCollapsed', filtersContainer.classList.contains('collapsed'));
+}
+
+// Check if any filters are active
+function checkActiveFilters() {
+    const continent = document.getElementById('continentFilter').value;
+    const country = document.getElementById('countryFilter').value;
+    const mode = document.getElementById('modeFilter').value;
+    const band = document.getElementById('bandFilter').value;
+    const search = document.getElementById('searchFilter').value;
+    
+    const hasActiveFilters = continent || country || mode || band || search;
+    const badge = document.getElementById('filterActiveBadge');
+    badge.style.display = hasActiveFilters ? 'inline' : 'none';
+}
+
+// Restore filter collapsed state
+function restoreFilterState() {
+    const collapsed = localStorage.getItem('filtersCollapsed') === 'true';
+    
+    // On mobile (width < 768px), default to collapsed
+    const isMobile = window.innerWidth < 768;
+    const shouldCollapse = collapsed || (isMobile && localStorage.getItem('filtersCollapsed') === null);
+    
+    if (shouldCollapse) {
+        document.getElementById('filtersContainer').classList.add('collapsed');
+        document.getElementById('filterToggle').classList.add('collapsed');
+    }
+}
+
 // Event Listeners
-document.getElementById('continentFilter').addEventListener('change', applyFilters);
-document.getElementById('countryFilter').addEventListener('change', applyFilters);
-document.getElementById('modeFilter').addEventListener('change', applyFilters);
-document.getElementById('bandFilter').addEventListener('change', applyFilters);
-document.getElementById('searchFilter').addEventListener('input', applyFilters);
+document.getElementById('filterToggle').addEventListener('click', toggleFilters);
+document.getElementById('continentFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
+document.getElementById('countryFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
+document.getElementById('modeFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
+document.getElementById('bandFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
+document.getElementById('searchFilter').addEventListener('input', () => { applyFilters(); checkActiveFilters(); });
+
+// Restore filter state on load
+restoreFilterState();
+
+// Update version display
+if (typeof VERSION_INFO !== 'undefined') {
+    document.getElementById('versionDisplay').textContent = `${VERSION_INFO.commit} (${VERSION_INFO.date})`;
+} else {
+    document.getElementById('versionDisplay').textContent = 'dev';
+}
 
 // Initial Load
 loadSpots();
