@@ -505,7 +505,20 @@ async function loadSpots() {
         const response = await fetch('https://api.pota.app/spot/');
         if (!response.ok) throw new Error('API Error');
         
-        allSpots = await response.json();
+        const rawSpots = await response.json();
+        
+        // Keep only the newest spot per activator
+        const spotsByActivator = {};
+        rawSpots.forEach(spot => {
+            const activator = spot.activator;
+            const spotTime = new Date(spot.spotTime);
+            
+            if (!spotsByActivator[activator] || new Date(spotsByActivator[activator].spotTime) < spotTime) {
+                spotsByActivator[activator] = spot;
+            }
+        });
+        
+        allSpots = Object.values(spotsByActivator);
         
         // Reapply filters with saved values
         applyFilters();
