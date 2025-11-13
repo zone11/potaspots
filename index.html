@@ -47,31 +47,71 @@
             </div>
             
             <div class="filter-group">
-                <label for="continentFilter">Continent</label>
-                <select id="continentFilter">
-                    <option value="">All Continents</option>
-                </select>
+                <label class="filter-label" onclick="toggleFilterSection('continent')">
+                    <div class="filter-label-content">
+                        <span class="filter-toggle-icon" id="continentToggle">▼</span>
+                        <span>Continent</span>
+                    </div>
+                    <span class="filter-count" id="continentCount"></span>
+                </label>
+                <div class="filter-checkboxes" id="continentFilter">
+                    <div class="filter-actions">
+                        <button class="filter-action-btn" onclick="selectAllFilter('continent')">All</button>
+                        <button class="filter-action-btn" onclick="clearFilter('continent')">Clear</button>
+                    </div>
+                    <div class="checkbox-list" id="continentCheckboxes"></div>
+                </div>
             </div>
             
             <div class="filter-group">
-                <label for="countryFilter">Country</label>
-                <select id="countryFilter">
-                    <option value="">All Countries</option>
-                </select>
+                <label class="filter-label" onclick="toggleFilterSection('country')">
+                    <div class="filter-label-content">
+                        <span class="filter-toggle-icon" id="countryToggle">▼</span>
+                        <span>Country</span>
+                    </div>
+                    <span class="filter-count" id="countryCount"></span>
+                </label>
+                <div class="filter-checkboxes" id="countryFilter">
+                    <div class="filter-actions">
+                        <button class="filter-action-btn" onclick="selectAllFilter('country')">All</button>
+                        <button class="filter-action-btn" onclick="clearFilter('country')">Clear</button>
+                    </div>
+                    <div class="checkbox-list" id="countryCheckboxes"></div>
+                </div>
             </div>
             
             <div class="filter-group">
-                <label for="modeFilter">Mode</label>
-                <select id="modeFilter">
-                    <option value="">All Modes</option>
-                </select>
+                <label class="filter-label" onclick="toggleFilterSection('mode')">
+                    <div class="filter-label-content">
+                        <span class="filter-toggle-icon" id="modeToggle">▼</span>
+                        <span>Mode</span>
+                    </div>
+                    <span class="filter-count" id="modeCount"></span>
+                </label>
+                <div class="filter-checkboxes" id="modeFilter">
+                    <div class="filter-actions">
+                        <button class="filter-action-btn" onclick="selectAllFilter('mode')">All</button>
+                        <button class="filter-action-btn" onclick="clearFilter('mode')">Clear</button>
+                    </div>
+                    <div class="checkbox-list" id="modeCheckboxes"></div>
+                </div>
             </div>
             
             <div class="filter-group">
-                <label for="bandFilter">Band</label>
-                <select id="bandFilter">
-                    <option value="">All Bands</option>
-                </select>
+                <label class="filter-label" onclick="toggleFilterSection('band')">
+                    <div class="filter-label-content">
+                        <span class="filter-toggle-icon" id="bandToggle">▼</span>
+                        <span>Band</span>
+                    </div>
+                    <span class="filter-count" id="bandCount"></span>
+                </label>
+                <div class="filter-checkboxes" id="bandFilter">
+                    <div class="filter-actions">
+                        <button class="filter-action-btn" onclick="selectAllFilter('band')">All</button>
+                        <button class="filter-action-btn" onclick="clearFilter('band')">Clear</button>
+                    </div>
+                    <div class="checkbox-list" id="bandCheckboxes"></div>
+                </div>
             </div>
             
             <div class="filter-group">

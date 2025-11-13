@@ -271,6 +271,78 @@ let refreshInterval;
 let countdownInterval;
 let secondsUntilRefresh = 30;
 
+// Filter state
+let selectedContinents = [];
+let selectedCountries = [];
+let selectedModes = [];
+let selectedBands = [];
+
+// Filter section collapsed state
+let filterSectionsCollapsed = {
+    continent: false,
+    country: false,
+    mode: false,
+    band: false
+};
+
+function toggleFilterSection(filterType) {
+    const checkboxes = document.getElementById(`${filterType}Filter`);
+    const toggleIcon = document.getElementById(`${filterType}Toggle`);
+    
+    const isCollapsed = checkboxes.classList.contains('collapsed');
+    
+    if (isCollapsed) {
+        checkboxes.classList.remove('collapsed');
+        toggleIcon.classList.remove('collapsed');
+        filterSectionsCollapsed[filterType] = false;
+    } else {
+        checkboxes.classList.add('collapsed');
+        toggleIcon.classList.add('collapsed');
+        filterSectionsCollapsed[filterType] = true;
+    }
+    
+    // Save state
+    localStorage.setItem('filterSectionsCollapsed', JSON.stringify(filterSectionsCollapsed));
+}
+
+function initializeFilterSections() {
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    // Try to restore saved state
+    try {
+        const savedState = localStorage.getItem('filterSectionsCollapsed');
+        if (savedState) {
+            filterSectionsCollapsed = JSON.parse(savedState);
+        } else if (isMobile) {
+            // On mobile, collapse all by default if no saved state
+            filterSectionsCollapsed = {
+                continent: true,
+                country: true,
+                mode: true,
+                band: true
+            };
+        }
+    } catch (e) {
+        if (isMobile) {
+            filterSectionsCollapsed = {
+                continent: true,
+                country: true,
+                mode: true,
+                band: true
+            };
+        }
+    }
+    
+    // Apply collapsed state
+    Object.keys(filterSectionsCollapsed).forEach(filterType => {
+        if (filterSectionsCollapsed[filterType]) {
+            document.getElementById(`${filterType}Filter`).classList.add('collapsed');
+            document.getElementById(`${filterType}Toggle`).classList.add('collapsed');
+        }
+    });
+}
+
 function updateRefreshTimer() {
     const timerElement = document.getElementById('refreshTimer');
     if (timerElement) {
@@ -320,29 +392,25 @@ function formatTime24h(dateString) {
 }
 
 function applyFilters() {
-    const continent = document.getElementById('continentFilter').value;
-    const country = document.getElementById('countryFilter').value;
-    const mode = document.getElementById('modeFilter').value;
-    const band = document.getElementById('bandFilter').value;
     const search = document.getElementById('searchFilter').value.toLowerCase();
 
     // Save filter settings to localStorage
     localStorage.setItem('potaFilters', JSON.stringify({
-        continent,
-        country,
-        mode,
-        band,
+        continents: selectedContinents,
+        countries: selectedCountries,
+        modes: selectedModes,
+        bands: selectedBands,
         search
     }));
 
     // Update country filter based on continent selection
-    updateCountryFilter(continent);
+    updateCountryFilter();
 
     filteredSpots = allSpots.filter(spot => {
-        if (continent && getContinent(spot.locationDesc) !== continent) return false;
-        if (country && getCountry(spot.locationDesc) !== country) return false;
-        if (mode && spot.mode !== mode) return false;
-        if (band && getBand(spot.frequency) !== band) return false;
+        if (selectedContinents.length > 0 && !selectedContinents.includes(getContinent(spot.locationDesc))) return false;
+        if (selectedCountries.length > 0 && !selectedCountries.includes(getCountry(spot.locationDesc))) return false;
+        if (selectedModes.length > 0 && !selectedModes.includes(spot.mode)) return false;
+        if (selectedBands.length > 0 && !selectedBands.includes(getBand(spot.frequency))) return false;
         if (search) {
             const searchStr = `${spot.activator} ${spot.reference} ${spot.name}`.toLowerCase();
             if (!searchStr.includes(search)) return false;
@@ -352,16 +420,18 @@ function applyFilters() {
 
     displaySpots();
     updateStats();
+    updateFilterCounts();
+    checkActiveFilters();
 }
 
-function updateCountryFilter(selectedContinent) {
+function updateCountryFilter() {
     let countries;
     
-    if (selectedContinent) {
-        // Filter countries by selected continent
+    if (selectedContinents.length > 0) {
+        // Filter countries by selected continents
         countries = [...new Set(
             allSpots
-                .filter(s => getContinent(s.locationDesc) === selectedContinent)
+                .filter(s => selectedContinents.includes(getContinent(s.locationDesc)))
                 .map(s => getCountry(s.locationDesc))
                 .filter(c => c)
         )].sort();
@@ -370,18 +440,11 @@ function updateCountryFilter(selectedContinent) {
         countries = [...new Set(allSpots.map(s => getCountry(s.locationDesc)).filter(c => c))].sort();
     }
 
-    const currentCountry = document.getElementById('countryFilter').value;
+    // Remove selected countries that are no longer available
+    selectedCountries = selectedCountries.filter(c => countries.includes(c));
     
-    document.getElementById('countryFilter').innerHTML = 
-        '<option value="">All Countries</option>' +
-        countries.map(c => `<option value="${c}">${c}</option>`).join('');
-    
-    // Restore country selection if it's still valid
-    if (currentCountry && countries.includes(currentCountry)) {
-        document.getElementById('countryFilter').value = currentCountry;
-    } else {
-        document.getElementById('countryFilter').value = '';
-    }
+    // Rebuild country checkboxes
+    buildCheckboxList('country', countries, selectedCountries);
 }
 
 function displaySpots() {
@@ -474,23 +537,127 @@ function updateStats() {
 
 function populateFilters() {
     const continents = [...new Set(allSpots.map(s => getContinent(s.locationDesc)))].sort();
+    const countries = [...new Set(allSpots.map(s => getCountry(s.locationDesc)).filter(c => c))].sort();
     const modes = [...new Set(allSpots.map(s => s.mode).filter(m => m && m.trim()))].sort();
     const bands = [...new Set(allSpots.map(s => getBand(s.frequency)))].sort();
 
-    document.getElementById('continentFilter').innerHTML = 
-        '<option value="">All Continents</option>' +
-        continents.map(c => `<option value="${c}">${c}</option>`).join('');
-
-    document.getElementById('modeFilter').innerHTML = 
-        '<option value="">All Modes</option>' +
-        modes.map(m => `<option value="${m}">${m}</option>`).join('');
-
-    document.getElementById('bandFilter').innerHTML = 
-        '<option value="">All Bands</option>' +
-        bands.map(b => `<option value="${b}">${b}</option>`).join('');
+    buildCheckboxList('continent', continents, selectedContinents);
+    buildCheckboxList('country', countries, selectedCountries);
+    buildCheckboxList('mode', modes, selectedModes);
+    buildCheckboxList('band', bands, selectedBands);
     
     // Restore saved filters
     restoreFilters();
+}
+
+function buildCheckboxList(filterType, items, selectedItems) {
+    const containerId = `${filterType}Checkboxes`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    container.innerHTML = items.map(item => {
+        const safeId = `${filterType}_${item.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        const escapedItem = item.replace(/'/g, "\\'");
+        return `
+            <div class="checkbox-item">
+                <input type="checkbox" 
+                       id="${safeId}" 
+                       value="${item}" 
+                       ${selectedItems.includes(item) ? 'checked' : ''}
+                       onchange="toggleFilter('${filterType}', '${escapedItem}')">
+                <label for="${safeId}">${item}</label>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleFilter(filterType, value) {
+    let selectedArray;
+    
+    switch(filterType) {
+        case 'continent':
+            selectedArray = selectedContinents;
+            break;
+        case 'country':
+            selectedArray = selectedCountries;
+            break;
+        case 'mode':
+            selectedArray = selectedModes;
+            break;
+        case 'band':
+            selectedArray = selectedBands;
+            break;
+    }
+    
+    const index = selectedArray.indexOf(value);
+    if (index > -1) {
+        selectedArray.splice(index, 1);
+    } else {
+        selectedArray.push(value);
+    }
+    
+    applyFilters();
+}
+
+function selectAllFilter(filterType) {
+    const container = document.getElementById(`${filterType}Checkboxes`);
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    
+    checkboxes.forEach(cb => {
+        if (!cb.checked) {
+            cb.checked = true;
+            const value = cb.value;
+            
+            switch(filterType) {
+                case 'continent':
+                    if (!selectedContinents.includes(value)) selectedContinents.push(value);
+                    break;
+                case 'country':
+                    if (!selectedCountries.includes(value)) selectedCountries.push(value);
+                    break;
+                case 'mode':
+                    if (!selectedModes.includes(value)) selectedModes.push(value);
+                    break;
+                case 'band':
+                    if (!selectedBands.includes(value)) selectedBands.push(value);
+                    break;
+            }
+        }
+    });
+    
+    applyFilters();
+}
+
+function clearFilter(filterType) {
+    const container = document.getElementById(`${filterType}Checkboxes`);
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    switch(filterType) {
+        case 'continent':
+            selectedContinents = [];
+            break;
+        case 'country':
+            selectedCountries = [];
+            break;
+        case 'mode':
+            selectedModes = [];
+            break;
+        case 'band':
+            selectedBands = [];
+            break;
+    }
+    
+    applyFilters();
+}
+
+function updateFilterCounts() {
+    document.getElementById('continentCount').textContent = selectedContinents.length > 0 ? selectedContinents.length : '';
+    document.getElementById('countryCount').textContent = selectedCountries.length > 0 ? selectedCountries.length : '';
+    document.getElementById('modeCount').textContent = selectedModes.length > 0 ? selectedModes.length : '';
+    document.getElementById('bandCount').textContent = selectedBands.length > 0 ? selectedBands.length : '';
 }
 
 function restoreFilters() {
@@ -498,15 +665,17 @@ function restoreFilters() {
         const savedFilters = localStorage.getItem('potaFilters');
         if (savedFilters) {
             const filters = JSON.parse(savedFilters);
-            document.getElementById('continentFilter').value = filters.continent || '';
-            document.getElementById('modeFilter').value = filters.mode || '';
-            document.getElementById('bandFilter').value = filters.band || '';
+            
+            selectedContinents = filters.continents || [];
+            selectedCountries = filters.countries || [];
+            selectedModes = filters.modes || [];
+            selectedBands = filters.bands || [];
+            
             document.getElementById('searchFilter').value = filters.search || '';
             
-            // Update country filter based on continent, then restore country value
-            updateCountryFilter(filters.continent || '');
-            if (filters.country) {
-                document.getElementById('countryFilter').value = filters.country;
+            // Rebuild checkbox lists with saved selections
+            if (allSpots.length > 0) {
+                populateFilters();
             }
             
             // Check if filters are active
@@ -574,13 +743,13 @@ function toggleFilters() {
 
 // Check if any filters are active
 function checkActiveFilters() {
-    const continent = document.getElementById('continentFilter').value;
-    const country = document.getElementById('countryFilter').value;
-    const mode = document.getElementById('modeFilter').value;
-    const band = document.getElementById('bandFilter').value;
     const search = document.getElementById('searchFilter').value;
     
-    const hasActiveFilters = continent || country || mode || band || search;
+    const hasActiveFilters = selectedContinents.length > 0 || 
+                            selectedCountries.length > 0 || 
+                            selectedModes.length > 0 || 
+                            selectedBands.length > 0 || 
+                            search;
     const badge = document.getElementById('filterActiveBadge');
     badge.style.display = hasActiveFilters ? 'inline' : 'none';
 }
@@ -601,14 +770,13 @@ function restoreFilterState() {
 
 // Event Listeners
 document.getElementById('filterToggle').addEventListener('click', toggleFilters);
-document.getElementById('continentFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
-document.getElementById('countryFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
-document.getElementById('modeFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
-document.getElementById('bandFilter').addEventListener('change', () => { applyFilters(); checkActiveFilters(); });
 document.getElementById('searchFilter').addEventListener('input', () => { applyFilters(); checkActiveFilters(); });
 
 // Restore filter state on load
 restoreFilterState();
+
+// Initialize filter sections (collapsed on mobile)
+initializeFilterSections();
 
 // Update version display
 if (typeof VERSION_INFO !== 'undefined') {
