@@ -267,6 +267,26 @@ const CONTINENT_MAP = {
 
 let allSpots = [];
 let filteredSpots = [];
+let refreshInterval;
+let countdownInterval;
+let secondsUntilRefresh = 30;
+
+function updateRefreshTimer() {
+    const timerElement = document.getElementById('refreshTimer');
+    if (timerElement) {
+        timerElement.textContent = `${secondsUntilRefresh}s`;
+    }
+    secondsUntilRefresh--;
+    
+    if (secondsUntilRefresh < 0) {
+        secondsUntilRefresh = 30;
+    }
+}
+
+function resetRefreshTimer() {
+    secondsUntilRefresh = 30;
+    updateRefreshTimer();
+}
 
 function getContinent(locationDesc) {
     if (!locationDesc) return 'Unknown';
@@ -505,6 +525,9 @@ async function loadSpots() {
             document.getElementById('spotsContainer').innerHTML = '<div class="loading">Loading spots...</div>';
         }
         
+        // Reset refresh timer
+        resetRefreshTimer();
+        
         const response = await fetch('https://api.pota.app/spot/');
         if (!response.ok) throw new Error('API Error');
         
@@ -597,5 +620,8 @@ if (typeof VERSION_INFO !== 'undefined') {
 // Initial Load
 loadSpots();
 
+// Start countdown timer (updates every second)
+countdownInterval = setInterval(updateRefreshTimer, 1000);
+
 // Auto-refresh every 30 seconds
-setInterval(loadSpots, 30000);
+refreshInterval = setInterval(loadSpots, 30000);

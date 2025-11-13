@@ -31,18 +31,19 @@
                 <span>Filters</span>
                 <span class="filter-active-badge" id="filterActiveBadge" style="display: none;">●</span>
             </button>
+            <div class="refresh-section">
+                <span class="refresh-timer" id="refreshTimer">30s</span>
+                <button class="refresh-btn-header" onclick="loadSpots()" title="Refresh">🔄</button>
+            </div>
         </div>
         
         <div class="filters" id="filtersContainer">
             <div class="filter-stats-row">
-                <div class="stats-compact-mini">
-                    <span class="stats-label-mini">Total:</span>
-                    <span class="stat-mini">ACT: <strong id="totalActivators">0</strong></span>
-                    <span class="stat-mini">MOD: <strong id="totalModes">0</strong></span>
-                    <span class="stat-mini">BND: <strong id="totalBands">0</strong></span>
-                    <span class="stat-mini">CNT: <strong id="totalContinents">0</strong></span>
-                </div>
-                <button class="refresh-btn-mini" onclick="loadSpots()">🔄</button>
+                <span class="stats-label-combined">Stats:</span>
+                <span class="stat-combined">ACT: <strong id="filteredActivators">0</strong> (<span id="totalActivators">0</span>)</span>
+                <span class="stat-combined">MOD: <strong id="filteredModes">0</strong> (<span id="totalModes">0</span>)</span>
+                <span class="stat-combined">BND: <strong id="filteredBands">0</strong> (<span id="totalBands">0</span>)</span>
+                <span class="stat-combined">CNT: <strong id="filteredContinents">0</strong> (<span id="totalContinents">0</span>)</span>
             </div>
             
             <div class="filter-group">
@@ -77,14 +78,6 @@
                 <label for="searchFilter">Search</label>
                 <input type="text" id="searchFilter" placeholder="Callsign/Park">
             </div>
-        </div>
-        
-        <div class="stats-filtered">
-            <span class="stats-label-filtered">Filtered:</span>
-            <span class="stat-mini">ACT: <strong id="filteredActivators">0</strong></span>
-            <span class="stat-mini">MOD: <strong id="filteredModes">0</strong></span>
-            <span class="stat-mini">BND: <strong id="filteredBands">0</strong></span>
-            <span class="stat-mini">CNT: <strong id="filteredContinents">0</strong></span>
         </div>
         
         <div class="spots-container" id="spotsContainer">
